@@ -14,8 +14,8 @@ Getestet mit einem echten TriliumNext v0.106.1 (dem Docker-Image
 ## Voraussetzungen
 
 - Gladys Assistant 5.1 oder neuer.
-- Ein Trilium-Server, den der Gladys-Rechner erreicht: TriliumNext oder das
-  ursprüngliche Trilium Notes ab 0.50 (die ETAPI). Die Desktop-Anwendung allein
+- Ein Trilium-Server, den der Gladys-Rechner erreicht: TriliumNext (getestet
+  mit 0.106.1; ältere Versionen mit ETAPI sollten gehen, ungetestet). Die Desktop-Anwendung allein
   hat keinen Server: Nutze ihre Server-Ausgabe oder einen
   Synchronisationsserver.
 - Ein ETAPI-Token: Öffne in Trilium **Optionen → ETAPI** und klicke auf **Neues
@@ -93,8 +93,8 @@ gezählt.
 - **Trilium-Notiz erstellen**: **Titel** und bei Bedarf **Übergeordnete
   Notiz** (der genaue Titel oder die ID einer vorhandenen Notiz; leer: die
   Wurzel), **Inhalt** (reiner Text, ein Absatz pro Zeile) und **Labels** (durch
-  Kommas getrennt, `name=wert` für ein Label mit Wert). Das Label `todo` macht
-  sie zur Aufgabe. Eine unbekannte übergeordnete Notiz ist ein Fehler: Die
+  Kommas getrennt, `name=wert` für ein Label mit Wert). Das Aufgaben-Label
+  (standardmäßig `todo`) macht sie zur Aufgabe. Eine unbekannte übergeordnete Notiz ist ein Fehler: Die
   Integration erstellt nie eine.
 
 Beide geben **Notiz-ID**, **Titel der Notiz** und **Adresse der Notiz**
@@ -121,6 +121,9 @@ zurück; **Trilium-Notiz erstellen** gibt auch **Übergeordnete Notiz** zurück.
 - **„Trilium antwortet nicht“**: Prüfe Adresse und Port vom Gladys-Rechner
   aus. Der Container nutzt ein Bridge-Netzwerk: `localhost` ist der Container
   selbst, gib stattdessen die IP-Adresse des Servers ein.
+- **„Trilium antwortet unter einer anderen Adresse“**: Die Adresse leitet
+  weiter, meist von http zu https. Gib die Adresse ein, bei der dein Browser
+  landet, mit `https://`.
 - **„Diese Adresse antwortet nicht wie Trilium“**: Eine Anmeldeseite eines
   Proxys antwortet statt Trilium. Gib die Adresse von Trilium selbst ein.
 - **„Die Tagesnotiz ist geschützt“**: Trilium gibt den Inhalt einer
@@ -136,7 +139,9 @@ zurück; **Trilium-Notiz erstellen** gibt auch **Übergeordnete Notiz** zurück.
   (Trilium ändert dann die Änderungszeit der Notiz nicht); eine zwischen zwei
   Lesevorgängen mehrfach gespeicherte Notiz wird einmal gemeldet.
 - Geschützte Notizen werden gezählt, ihr Inhalt wird aber nie gelesen oder
-  geschrieben.
+  geschrieben, und ihr Titel erscheint als „Geschützte Notiz“.
+- Archivierte Notizen werden überall ignoriert: Zähler, Aufgaben und
+  Auslöser.
 - Ein Lesen besteht aus ein paar ETAPI-Suchen. Die Zählungen lesen die Liste
   der Notizen als Stream, ohne sie zu behalten: Eine Datenbank mit
   zehntausenden Notizen passt in den Speicher des Containers, braucht aber etwas

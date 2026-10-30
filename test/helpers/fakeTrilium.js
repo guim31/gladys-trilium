@@ -153,8 +153,19 @@ export function createTrilium() {
       return existing;
     }
     const day = new Date(`${date}T12:00:00Z`);
+    // Like Trilium: the month note is created with the day when missing.
+    const month =
+      state.notes.find((n) =>
+        n.attributes.some((a) => a.name === 'monthNote' && a.value === date.slice(0, 7)),
+      ) ??
+      (() => {
+        const created = addNote({ title: `${date.slice(5, 7)} - month` });
+        addLabel(created, { name: 'monthNote', value: date.slice(0, 7) });
+        return created;
+      })();
     const note = addNote({
       title: `${date.slice(8)} - ${WEEKDAYS[day.getUTCDay()]}`,
+      parent: month.noteId,
       content: DAY_CONTENT,
     });
     addLabel(note, { name: 'dateNote', value: date });

@@ -490,3 +490,104 @@ test('the language changes the names, not the device', async (t) => {
   );
   assert.equal(world.fake.discoveredDevices[0].features[1].name, 'Heute geänderte Notizen');
 });
+
+test('append_day_note on a new month: the month note Trilium creates is not announced', async (t) => {
+  const world = await createWorld();
+  t.after(() => world.app.stop());
+  world.clock.now = Date.parse('2026-11-15T12:00:00.000Z');
+  const ack = await world.fake.sceneAction('append_day_note', { line: 'Hello' });
+  assert.equal(ack.success, true, ack.error);
+  assert.ok(world.server.state.notes.some((n) => n.title === '11 - month'));
+  await world.hub.refresh();
+  await world.hub.refresh();
+  assert.equal(world.fake.sceneEvents.length, 0);
+});
+
+test('create_note: labels refused, the note is reported and never announced', async (t) => {
+  const world = await createWorld({ config: { ...CONFIG, language: 'en' } });
+  t.after(() => world.app.stop());
+  const fetch = world.server.fetch;
+  world.hub.client.fetch = async (url, init) =>
+    url.endsWith('/etapi/attributes')
+      ? new Response('{"status":500,"code":"X","message":"boom"}', { status: 500 })
+      : fetch(url, init);
+  const ack = await world.fake.sceneAction('create_note', { title: 'Half', labels: 'todo' });
+  assert.equal(ack.error, 'The note was created, but Trilium refused its labels.');
+  world.hub.client.fetch = fetch;
+  await world.hub.refresh();
+  await world.hub.refresh();
+  assert.equal(world.fake.sceneEvents.length, 0);
+});
+
+test('a read during a write announces nothing, the read after it does', async (t) => {
+  const world = await createWorld();
+  t.after(() => world.app.stop());
+  const fetch = world.server.fetch;
+  let release;
+  const gate = new Promise((resolve) => {
+    release = resolve;
+  });
+  world.hub.client.fetch = async (url, init) => {
+    const response = await fetch(url, init);
+    if (url.endsWith('/etapi/create-note')) {
+      await gate; // the note exists, not remembered yet
+    }
+    return response;
+  };
+  const pending = world.fake.sceneAction('create_note', { title: 'Mine' });
+  await settle(10);
+  world.server.addNote({ title: 'By a person' });
+  await world.hub.refresh();
+  assert.equal(world.fake.sceneEvents.length, 0, 'nothing announced during the write');
+  release();
+  assert.equal((await pending).success, true);
+  await settle(20);
+  await world.hub.refresh();
+  assert.deepEqual(
+    changed(world.fake).map((e) => e.data.note_title),
+    ['By a person'],
+  );
+});
+
+test('a protected note shows no encrypted title, and labels fire ten events at most', async (t) => {
+  const world = await createWorld({ config: { ...CONFIG, language: 'fr' } });
+  t.after(() => world.app.stop());
+  const secret = world.server.addNote({ title: 'aGVsbG8gZW5jcnlwdGVk' });
+  secret.isProtected = true;
+  const many = world.server.addNote({
+    title: 'Many',
+    labels: [...Array.from({ length: 14 }, (_, i) => `l${i}`), 'label:promoted'],
+  });
+  await world.hub.refresh();
+  world.server.editNote(many.noteId);
+  world.server.editNote(secret.noteId);
+  await world.hub.refresh();
+  assert.equal(world.hub.latest[0].title, 'Note protégée');
+  assert.equal(changed(world.fake).at(-1).data.note_title, 'Note protégée');
+  const labels = labeled(world.fake).filter(
+    (e) => e.data.note_id === many.noteId && e.data.change === 'updated',
+  );
+  assert.equal(labels.length, 10);
+  assert.ok(!labels.some((e) => e.data.label.startsWith('label:')));
+});
+
+test('a parent of the hidden subtree is never taken as an id', async (t) => {
+  const world = await createWorld({ config: { ...CONFIG, language: 'en' } });
+  t.after(() => world.app.stop());
+  const ack = await world.fake.sceneAction('create_note', { parent: '_hidden', title: 'X' });
+  assert.equal(ack.error, 'No note "_hidden" in Trilium.');
+});
+
+test('a redirection (http to https) is reported, never followed', async (t) => {
+  const world = await createWorld({ config: { ...CONFIG, language: 'en' } });
+  t.after(() => world.app.stop());
+  world.hub.client.fetch = async (url, init) => {
+    assert.equal(init.redirect, 'manual');
+    return new Response(null, {
+      status: 301,
+      headers: { location: 'https://notes.example.org/etapi/app-info' },
+    });
+  };
+  await world.hub.refresh();
+  assert.match(world.fake.connectionStatus.message.en, /another address/);
+});

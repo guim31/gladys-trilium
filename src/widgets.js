@@ -87,13 +87,17 @@ export async function buildContent(hub, { language = 'en', settings = {} } = {})
         value: hub.counters.today,
         icon: 'edit-3',
       },
-      {
+    );
+    // The to-do tile counts the to-do label of the configuration: shown
+    // beside the latest notes or that label's list, not another label's.
+    if (!label || label === hub.config.todoLabel) {
+      components.push({
         type: 'value',
         label: pick(TEXT.todo, language),
         value: hub.counters.todo,
         icon: 'check-square',
-      },
-    );
+      });
+    }
   }
   if (notes === null) {
     components.push({ type: 'text', variant: 'caption', text: pick(TEXT.unavailable, language) });

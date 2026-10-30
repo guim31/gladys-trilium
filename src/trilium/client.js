@@ -25,7 +25,7 @@ export const DEFAULT_TIMEOUT = 15_000;
 
 export class TriliumError extends Error {
   /**
-   * @param {'unreachable' | 'unauthorized' | 'not_found' | 'timeout' | 'http' | 'invalid' | 'rejected'} kind
+   * @param {'unreachable' | 'unauthorized' | 'not_found' | 'timeout' | 'http' | 'invalid' | 'rejected' | 'redirect'} kind
    * @param {string} message never carries a credential
    * @param {number} [status]
    */
@@ -60,7 +60,7 @@ export class TriliumClient {
   }
 
   /** The response of a request, checked; the caller reads its body. */
-  async #request(method, path, body, contentType = 'application/json') {
+  async #request(method, path, body, contentType = 'application/json', timeout = this.timeout) {
     const headers = { Accept: 'application/json', Authorization: this.token };
     if (body !== undefined) {
       headers['Content-Type'] = contentType;
@@ -71,11 +71,23 @@ export class TriliumClient {
         method,
         headers,
         body,
-        signal: AbortSignal.timeout(this.timeout),
-        redirect: 'follow',
+        signal: AbortSignal.timeout(timeout),
+        // Never followed: a redirection from http to https drops the token
+        // (another origin), and turns a POST into a GET.
+        redirect: 'manual',
       });
     } catch (err) {
-      throw this.#network(err);
+      throw this.#network(err, timeout);
+    }
+    if (response.status >= 300 && response.status < 400) {
+      await response.body?.cancel().catch(() => {});
+      let target = '';
+      try {
+        target = ` to ${new URL(response.headers.get('location') ?? '', this.url).origin}`;
+      } catch {
+        // no usable Location
+      }
+      throw new TriliumError('redirect', `Trilium redirects${target}`, response.status);
     }
     if (!response.ok) {
       let raw = '';
@@ -89,12 +101,12 @@ export class TriliumClient {
     return response;
   }
 
-  #network(err) {
+  #network(err, timeout = this.timeout) {
     if (err instanceof TriliumError) {
       return err;
     }
     if (err?.name === 'TimeoutError' || err?.name === 'AbortError') {
-      return new TriliumError('timeout', `No answer from Trilium within ${this.timeout} ms`);
+      return new TriliumError('timeout', `No answer from Trilium within ${timeout} ms`);
     }
     const cause = err?.cause?.code ?? err?.cause?.message ?? err?.message ?? 'error';
     return new TriliumError('unreachable', `Trilium unreachable (${cause})`);
@@ -205,7 +217,15 @@ export class TriliumClient {
    * @param {string} search
    */
   async count(search) {
-    const response = await this.#request('GET', TriliumClient.#search(search));
+    // A large base takes a while to list: four times the usual delay.
+    const timeout = this.timeout * 4;
+    const response = await this.#request(
+      'GET',
+      TriliumClient.#search(search),
+      undefined,
+      undefined,
+      timeout,
+    );
     const decoder = new TextDecoder();
     const pattern = /\{"noteId":"([^"]*)"/g;
     let carry = '';
@@ -240,7 +260,7 @@ export class TriliumClient {
         carry = text;
       }
     } catch (err) {
-      throw this.#network(err);
+      throw this.#network(err, timeout);
     }
     if (!started && !/^\s*\{"results":\[/.test(carry)) {
       throw new TriliumError('invalid', 'Trilium did not answer the search');

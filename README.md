@@ -27,8 +27,7 @@ image).
 ## Requirements
 
 - Gladys Assistant 5.1 or later.
-- A Trilium server (TriliumNext, or Trilium Notes 0.50 or later) reachable from
-  Gladys, and an ETAPI token (Options → ETAPI → Create new ETAPI token).
+- A Trilium server (TriliumNext; tested with 0.106.1) reachable from Gladys, and an ETAPI token (Options → ETAPI → Create new ETAPI token).
 
 ## Installation
 
@@ -61,7 +60,8 @@ the creation time of the root note: it survives a change of address.
 - The triggers fire at the next read, not instantly; at most ten notes per read
   (the next ones at the next read; past 50 changes at once, the rest is
   skipped). Deleted and moved notes, and labels added alone, are not announced.
-- Protected notes are counted, but never read nor written.
+- Protected notes are counted, but never read nor written. Archived notes are
+  left out.
 - Nothing is ever deleted or moved in Trilium.
 
 ## Development

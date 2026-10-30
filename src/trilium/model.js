@@ -3,6 +3,13 @@
 // note, labels, a line for the day note) -> what ETAPI wants.
 // -----------------------------------------------------------------------------
 
+export const PROTECTED = {
+  en: 'Protected note',
+  fr: 'Note protégée',
+  de: 'Geschützte Notiz',
+  es: 'Nota protegida',
+};
+
 const clean = (value) => (typeof value === 'string' ? value.trim() : '');
 
 /** The address of a note in Trilium (it finds the path from the id). */
@@ -37,11 +44,15 @@ export const labelText = (labels) =>
  * A note as the integration keeps it.
  * @param {object} note
  * @param {string} baseUrl
+ * @param {string} [language]
  */
-export function summarizeNote(note, baseUrl) {
+export function summarizeNote(note, baseUrl, language = 'en') {
   return {
     id: note.noteId,
-    title: clean(note.title) || note.noteId,
+    // The title of a protected note stays encrypted outside a protected session.
+    title: note.isProtected
+      ? (PROTECTED[language] ?? PROTECTED.en)
+      : clean(note.title) || note.noteId,
     created: note.utcDateCreated,
     updated: note.utcDateModified,
     url: noteUrl(baseUrl, note.noteId),

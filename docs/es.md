@@ -13,8 +13,9 @@ Probada con un TriliumNext v0.106.1 real (la imagen Docker
 ## Requisitos previos
 
 - Gladys Assistant 5.1 o posterior.
-- Un servidor Trilium accesible desde la máquina de Gladys: TriliumNext, o el
-  Trilium Notes original 0.50 o posterior (la ETAPI). La aplicación de
+- Un servidor Trilium accesible desde la máquina de Gladys: TriliumNext
+  (probado con 0.106.1; las versiones anteriores con ETAPI deberían funcionar,
+  sin probar). La aplicación de
   escritorio sola no tiene servidor: use su edición servidor o un servidor de
   sincronización.
 - Un token ETAPI: en Trilium, abra **Opciones → ETAPI** y haga clic en **Crear
@@ -93,8 +94,8 @@ lecturas (una importación), se anuncian diez y el resto se cuenta como visto.
 - **Crear una nota de Trilium**: **Título**, y si lo desea **Nota padre** (el
   título exacto o el id. de una nota existente; vacío: la raíz), **Contenido**
   (texto sin formato, un párrafo por línea) y **Etiquetas** (separadas por
-  comas, `nombre=valor` para una etiqueta con valor). La etiqueta `todo` la
-  convierte en tarea. Una nota padre desconocida es un error: la integración
+  comas, `nombre=valor` para una etiqueta con valor). La etiqueta de tareas
+  (`todo` por defecto) la convierte en tarea. Una nota padre desconocida es un error: la integración
   nunca crea una.
 
 Ambas devuelven **Id. de la nota**, **Título de la nota** y **Dirección de la
@@ -121,6 +122,9 @@ nota**; **Crear una nota de Trilium** devuelve también **Nota padre**.
 - **«Trilium no responde»**: compruebe la dirección y el puerto desde la
   máquina de Gladys. El contenedor usa una red en puente: `localhost` es el
   propio contenedor, introduzca en su lugar la dirección IP del servidor.
+- **«Trilium responde en otra dirección»**: la dirección redirige, normalmente
+  de http a https. Introduzca la dirección a la que llega su navegador, con
+  `https://`.
 - **«Esta dirección no responde como Trilium»**: responde la página de inicio
   de sesión de un proxy en lugar de Trilium. Introduzca la dirección del propio
   Trilium.
@@ -137,7 +141,9 @@ nota**; **Crear una nota de Trilium** devuelve también **Nota padre**.
   cambia entonces la hora de modificación de la nota); una nota guardada varias
   veces entre dos lecturas se anuncia una vez.
 - Las notas protegidas se cuentan, pero su contenido nunca se lee ni se
-  escribe.
+  escribe, y su título aparece como «Nota protegida».
+- Las notas archivadas se ignoran en todas partes: contadores, tareas y
+  disparadores.
 - Una lectura son unas pocas búsquedas ETAPI. Los recuentos leen la lista de
   notas como un flujo, sin guardarla: una base de decenas de miles de notas
   cabe en la memoria del contenedor, pero tarda un poco más en contarse.

@@ -13,8 +13,8 @@ image). Feedback welcome on the Gladys forum.
 ## Prerequisites
 
 - Gladys Assistant 5.1 or later.
-- A Trilium server reachable from the Gladys machine: TriliumNext, or the
-  original Trilium Notes 0.50 or later (the ETAPI). The desktop application
+- A Trilium server reachable from the Gladys machine: TriliumNext (tested with
+  0.106.1; older versions with the ETAPI may work, untested). The desktop application
   alone has no server: use its server edition, or a synchronization server.
 - An ETAPI token: in Trilium, open **Options → ETAPI** and click **Create new
   ETAPI token**. Copy it: it is shown once.
@@ -87,7 +87,8 @@ and the rest is counted as seen.
 - **Create a Trilium note**: **Title**, and optionally **Parent note** (the
   exact title or the id of an existing note; empty: the root), **Content**
   (plain text, one paragraph per line) and **Labels** (separated by commas,
-  `name=value` for a label with a value). The label `todo` makes it a to-do. An
+  `name=value` for a label with a value). The to-do label (`todo` by default)
+  makes it a to-do. An
   unknown parent is an error: the integration never creates one.
 
 Both return **Note id**, **Note title** and **Note address**; **Create a
@@ -113,6 +114,9 @@ Trilium note** also returns **Parent note**.
 - **"Trilium does not answer"**: check the address and the port from the Gladys
   machine. The container uses a bridge network: `localhost` is the container
   itself, enter the IP address of the server instead.
+- **"Trilium answers at another address"**: the address redirects, usually
+  from http to https. Enter the address your browser ends up at, with
+  `https://`.
 - **"This address does not answer like Trilium"**: a proxy login page answers
   instead of Trilium. Enter the address of Trilium itself.
 - **"The day note is protected"**: Trilium does not give the content of a
@@ -126,7 +130,9 @@ Trilium note** also returns **Parent note**.
   Trilium pushes nothing. Notes deleted or moved are not announced, nor a label
   added alone (Trilium leaves the note's modification time unchanged); a note
   saved several times between two reads is announced once.
-- Protected notes are counted, but their content is never read nor written.
+- Protected notes are counted, but their content is never read nor written,
+  and their title shows as "Protected note".
+- Archived notes are left out everywhere: counters, to-dos and triggers.
 - A read is a handful of ETAPI searches. The counts read the list of matching
   notes as a stream, without keeping it: a base of tens of thousands of notes
   fits in the memory of the container, but takes a little longer to count.

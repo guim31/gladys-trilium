@@ -45,6 +45,7 @@ export const STATUS_TEXT = {
     unreachable: 'Trilium does not answer: check its address and that it is running.',
     error: 'Trilium answered with an error: see the logs of the integration.',
     invalid_answer: 'This address does not answer like Trilium: check the address and the port.',
+    redirect: 'Trilium answers at another address: enter the one your browser ends up at (https?).',
   },
   fr: {
     none: "Saisissez l'adresse de Trilium et un jeton ETAPI dans la configuration.",
@@ -55,6 +56,8 @@ export const STATUS_TEXT = {
     unreachable: "Trilium ne répond pas : vérifiez son adresse et qu'il est démarré.",
     error: "Trilium a répondu par une erreur : consultez les journaux de l'intégration.",
     invalid_answer: "Cette adresse ne répond pas comme Trilium : vérifiez l'adresse et le port.",
+    redirect:
+      'Trilium répond à une autre adresse : saisissez celle où arrive votre navigateur (https ?).',
   },
   de: {
     none: 'Gib in der Konfiguration die Adresse von Trilium und ein ETAPI-Token ein.',
@@ -64,6 +67,8 @@ export const STATUS_TEXT = {
     unreachable: 'Trilium antwortet nicht: Prüfe die Adresse und ob es läuft.',
     error: 'Trilium hat mit einem Fehler geantwortet: Sieh dir die Logs der Integration an.',
     invalid_answer: 'Diese Adresse antwortet nicht wie Trilium: Prüfe Adresse und Port.',
+    redirect:
+      'Trilium antwortet unter einer anderen Adresse: Gib die ein, bei der dein Browser landet (https?).',
   },
   es: {
     none: 'Introduzca la dirección de Trilium y un token ETAPI en la configuración.',
@@ -74,6 +79,8 @@ export const STATUS_TEXT = {
     unreachable: 'Trilium no responde: compruebe su dirección y que esté en marcha.',
     error: 'Trilium respondió con un error: consulte los registros de la integración.',
     invalid_answer: 'Esta dirección no responde como Trilium: compruebe la dirección y el puerto.',
+    redirect:
+      'Trilium responde en otra dirección: introduzca aquella a la que llega su navegador (¿https?).',
   },
 };
 
@@ -102,6 +109,7 @@ export const COMMAND_ERRORS = {
     unauthorized: 'Trilium refused the ETAPI token: nothing was done.',
     parent: 'No note "{name}" in Trilium.',
     title: 'Enter the title of the note.',
+    labels: 'The note was created, but Trilium refused its labels.',
     line: 'Enter the line to add.',
     protected: 'The day note is protected: Trilium does not let the integration write in it.',
     rejected: 'Trilium refused the note: {detail}',
@@ -113,6 +121,7 @@ export const COMMAND_ERRORS = {
     unauthorized: "Trilium a refusé le jeton ETAPI : rien n'a été fait.",
     parent: 'Aucune note « {name} » dans Trilium.',
     title: 'Saisissez le titre de la note.',
+    labels: 'La note a été créée, mais Trilium a refusé ses étiquettes.',
     line: 'Saisissez la ligne à ajouter.',
     protected: "La note du jour est protégée : Trilium ne laisse pas l'intégration y écrire.",
     rejected: 'Trilium a refusé la note : {detail}',
@@ -124,6 +133,7 @@ export const COMMAND_ERRORS = {
     unauthorized: 'Trilium hat das ETAPI-Token abgelehnt: Es wurde nichts getan.',
     parent: 'Keine Notiz „{name}“ in Trilium.',
     title: 'Gib den Titel der Notiz ein.',
+    labels: 'Die Notiz wurde erstellt, aber Trilium hat ihre Labels abgelehnt.',
     line: 'Gib die hinzuzufügende Zeile ein.',
     protected: 'Die Tagesnotiz ist geschützt: Trilium lässt die Integration nicht hineinschreiben.',
     rejected: 'Trilium hat die Notiz abgelehnt: {detail}',
@@ -135,6 +145,7 @@ export const COMMAND_ERRORS = {
     unauthorized: 'Trilium rechazó el token ETAPI: no se ha hecho nada.',
     parent: 'No hay ninguna nota «{name}» en Trilium.',
     title: 'Introduzca el título de la nota.',
+    labels: 'La nota se creó, pero Trilium rechazó sus etiquetas.',
     line: 'Introduzca la línea que desea añadir.',
     protected:
       'La nota del día está protegida: Trilium no deja que la integración escriba en ella.',

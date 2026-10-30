@@ -470,7 +470,7 @@
         "de": "Fügt am Ende der heutigen Notiz des Trilium-Journals eine Zeile mit Uhrzeit hinzu (bei Bedarf erstellt).",
         "es": "Añade una línea, con la hora, al final de la nota de hoy del diario de Trilium (creada si falta)."
       },
-      "timeout_seconds": 30,
+      "timeout_seconds": 60,
       "fields": [
         {
           "key": "line",
@@ -544,12 +544,12 @@
         "es": "Crear una nota de Trilium"
       },
       "description": {
-        "en": "Creates a text note under a chosen note, with labels if you want (todo makes it a to-do).",
-        "fr": "Crée une note texte sous une note choisie, avec des étiquettes si vous le souhaitez (todo en fait une tâche).",
-        "de": "Erstellt eine Textnotiz unter einer gewählten Notiz, auf Wunsch mit Labels (todo macht sie zur Aufgabe).",
-        "es": "Crea una nota de texto bajo una nota elegida, con etiquetas si lo desea (todo la convierte en tarea)."
+        "en": "Creates a text note under a chosen note, with labels if you want (the to-do label makes it a to-do).",
+        "fr": "Crée une note texte sous une note choisie, avec des étiquettes si vous le souhaitez (l'étiquette des tâches en fait une tâche).",
+        "de": "Erstellt eine Textnotiz unter einer gewählten Notiz, auf Wunsch mit Labels (das Aufgaben-Label macht sie zur Aufgabe).",
+        "es": "Crea una nota de texto bajo una nota elegida, con etiquetas si lo desea (la etiqueta de tareas la convierte en tarea)."
       },
-      "timeout_seconds": 30,
+      "timeout_seconds": 60,
       "fields": [
         {
           "key": "title",

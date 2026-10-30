@@ -107,6 +107,17 @@ message }`: 401 `NOT_AUTHENTICATED`, 404 `NOTE_NOT_FOUND`, 400
   is not a change the triggers can see. `GET /calendar/days/YYYY-MM-DD`
   **creates** the day note (and month, year) from the day template when
   missing; a new document's day template holds a "Tasks" heading and list.
+- `calendar/days` creates the **month and year notes** too: the day-note
+  action remembers them (`#rememberParents`) so they are never announced.
+  Reads announce nothing while a scene action writes (`writesPending`): the
+  note exists before the integration remembers it. `create_note` remembers
+  the note before adding its labels.
+- The ETAPI gives the **title of a protected note encrypted** (outside a
+  protected session): `summarizeNote` shows "Protected note" instead.
+- Redirections are **never followed** (`redirect: 'manual'`): from http to
+  https, fetch drops `Authorization` (another origin) and a 401 would blame
+  the token. A 3xx is the status "answers at another address".
+- `#resolveParent` never takes `_…` as an id (the hidden subtree).
 - The instance id is the root note's `utcDateCreated` in digits: stable across
   a change of address, unique per document (synced copies share it, they hold
   the same notes).

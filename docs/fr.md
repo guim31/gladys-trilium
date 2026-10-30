@@ -14,8 +14,9 @@ Testée sur un vrai TriliumNext v0.106.1 (l'image Docker
 ## Prérequis
 
 - Gladys Assistant 5.1 ou plus récent.
-- Un serveur Trilium joignable depuis la machine de Gladys : TriliumNext, ou
-  le Trilium Notes d'origine en 0.50 ou plus récent (l'ETAPI). L'application de
+- Un serveur Trilium joignable depuis la machine de Gladys : TriliumNext
+  (testé en 0.106.1 ; les versions plus anciennes dotées de l'ETAPI devraient
+  marcher, sans test). L'application de
   bureau seule n'a pas de serveur : utilisez son édition serveur, ou un serveur
   de synchronisation.
 - Un jeton ETAPI : dans Trilium, ouvrez **Options → ETAPI** et cliquez sur
@@ -95,7 +96,7 @@ est compté comme vu.
   titre exact ou l'identifiant d'une note existante ; vide : la racine),
   **Contenu** (texte brut, un paragraphe par ligne) et **Étiquettes** (séparées
   par des virgules, `nom=valeur` pour une étiquette avec valeur). L'étiquette
-  `todo` en fait une tâche. Une note parente inconnue est une erreur :
+  des tâches (`todo` par défaut) en fait une tâche. Une note parente inconnue est une erreur :
   l'intégration n'en crée jamais.
 
 Les deux renvoient **Identifiant de la note**, **Titre de la note** et
@@ -123,6 +124,9 @@ parente**.
 - **« Trilium ne répond pas »** : vérifiez l'adresse et le port depuis la
   machine de Gladys. Le conteneur est sur un réseau en pont : `localhost` est
   le conteneur lui-même, saisissez plutôt l'adresse IP du serveur.
+- **« Trilium répond à une autre adresse »** : l'adresse redirige, souvent de
+  http vers https. Saisissez l'adresse où arrive votre navigateur, avec
+  `https://`.
 - **« Cette adresse ne répond pas comme Trilium »** : une page de connexion
   d'un proxy répond à la place de Trilium. Saisissez l'adresse de Trilium
   lui-même.
@@ -140,7 +144,9 @@ parente**.
   alors l'heure de modification de la note) ; une note enregistrée plusieurs
   fois entre deux lectures est annoncée une fois.
 - Les notes protégées sont comptées, mais leur contenu n'est jamais lu ni
-  écrit.
+  écrit, et leur titre s'affiche « Note protégée ».
+- Les notes archivées sont ignorées partout : compteurs, tâches et
+  déclencheurs.
 - Une lecture, c'est quelques recherches ETAPI. Les comptages lisent la liste
   des notes en flux, sans la garder : une base de dizaines de milliers de notes
   tient dans la mémoire du conteneur, mais se compte un peu plus lentement.

@@ -64,6 +64,14 @@ const MAX_OWN = 200;
 // Reads after which a change whose event Gladys keeps refusing is given up.
 export const MAX_TRIES = 3;
 
+// Labels fired per note at most: a note on a template can carry a dozen.
+export const MAX_LABEL_EVENTS = 10;
+/** The label names of a note worth an event: not the promoted-attribute definitions. */
+const eventLabels = (note) =>
+  labelNames(note)
+    .filter((name) => !/^(label|relation):/.test(name))
+    .slice(0, MAX_LABEL_EVENTS);
+
 const ALL_NOTES = "note.noteId != ''";
 const changedSince = (time) => `note.utcDateModified >= '${searchDate(time)}'`;
 const openTodos = (label) => `#${label} #!done`;
@@ -143,6 +151,7 @@ export class Hub {
     this.widgetLists = new Map();
     this.configuring = Promise.resolve();
     this.writing = Promise.resolve();
+    this.writesPending = 0;
     this.refreshTimer = null;
     this.midnightTimer = null;
     this.refreshing = null;
@@ -350,12 +359,17 @@ export class Hub {
     }
     this.instance = instance;
     this.counters = { notes, today, todo };
-    this.latest = recent.map((n) => summarizeNote(n, this.config.url));
+    this.latest = recent.map((n) => summarizeNote(n, this.config.url, this.language));
     this.widgetLists.clear();
     this.#recover();
     await this.#update();
     if (client !== this.client || this.stopped || !this.instance) {
       return; // the configuration changed meanwhile
+    }
+    if (this.writesPending > 0) {
+      // A scene action is writing: the read after it announces (#serialize).
+      await this.updateConnectionStatus();
+      return;
     }
     await this.#announce(
       recent,
@@ -473,7 +487,7 @@ export class Hub {
     const data = this.#eventData(note, since);
     const events = [
       [TRIGGERS.changed, data],
-      ...labelNames(note).map((label) => [
+      ...eventLabels(note).map((label) => [
         TRIGGERS.labeled,
         { ...data, label: label.slice(0, 1000) },
       ]),
@@ -525,7 +539,7 @@ export class Hub {
 
   #eventData(note, since) {
     const created = timeOf(note.utcDateCreated) > since;
-    const summary = summarizeNote(note, this.config.url);
+    const summary = summarizeNote(note, this.config.url, this.language);
     return {
       change: created ? 'created' : 'updated',
       note_title: summary.title.slice(0, 1000),
@@ -677,7 +691,7 @@ export class Hub {
         orderDirection: 'desc',
         limit: count,
       });
-      const notes = found.map((n) => summarizeNote(n, this.config.url));
+      const notes = found.map((n) => summarizeNote(n, this.config.url, this.language));
       if (client === this.client) {
         this.widgetLists.set(label, { at: this.now(), notes });
       }
@@ -705,6 +719,7 @@ export class Hub {
         {
           unauthorized: 'unauthorized',
           invalid: 'invalid_answer',
+          redirect: 'redirect',
           not_found: 'invalid_answer',
           http: 'error',
           rejected: 'error',
@@ -789,7 +804,8 @@ export class Hub {
     if (text === '') {
       return { noteId: 'root', title: 'root' };
     }
-    if (/^[A-Za-z0-9_]{4,32}$/.test(text)) {
+    // An id (never one of the hidden subtree, `_hidden`, `_options`...).
+    if (/^[A-Za-z0-9][A-Za-z0-9_]{3,31}$/.test(text)) {
       try {
         return await client.note(text);
       } catch (err) {
@@ -811,9 +827,24 @@ export class Hub {
     return exact;
   }
 
-  /** Writes one at a time: two lines added at once both land in the note. */
+  /**
+   * Writes one at a time: two lines added at once both land in the note.
+   * While one runs, the reads announce nothing: a note just written but not
+   * remembered yet would be announced (and a scene could loop). The read
+   * after the write announces what a person changed meanwhile.
+   */
   #serialize(fn) {
-    const run = this.writing.then(fn);
+    const run = this.writing.then(async () => {
+      this.writesPending += 1;
+      try {
+        return await fn();
+      } finally {
+        this.writesPending -= 1;
+        if (this.client) {
+          this.refresh().catch(() => {});
+        }
+      }
+    });
     this.writing = run.catch(() => {});
     return run;
   }
@@ -839,15 +870,21 @@ export class Hub {
           title: name,
           content: textToHtml(typeof content === 'string' ? content : ''),
         });
+      } catch (err) {
+        throw this.#commandError(err);
+      }
+      // Remembered at once (a label leaves the modification time alone): a
+      // failure on the labels must not get the note announced.
+      this.#remember(note);
+      logger.info('Note created');
+      try {
         for (const label of parseLabels(labels)) {
           await client.addLabel(note.noteId, label);
         }
       } catch (err) {
-        throw this.#commandError(err);
+        logger.warn(`Labels not added: ${err.message}`);
+        throw new CommandError('labels', language);
       }
-      this.#remember(note);
-      logger.info('Note created');
-      this.refresh().catch(() => {});
       return this.#written(note, parentNote.title);
     });
   }
@@ -874,6 +911,10 @@ export class Hub {
         if (day.isProtected) {
           throw new CommandError('protected', language);
         }
+        // Trilium may have just created the month and the year notes too:
+        // they are the integration's writes, never announced. (Remembering an
+        // older one is harmless: its key is dropped at the next read.)
+        await this.#rememberParents(client, day);
         const html = await client.content(day.noteId);
         await client.setContent(day.noteId, appendParagraph(html, text));
         day = await client.note(day.noteId);
@@ -882,13 +923,35 @@ export class Hub {
       }
       this.#remember(day);
       logger.info('Line added to the day note');
-      this.refresh().catch(() => {});
       return this.#written(day);
     });
   }
 
+  /** The month and year notes above a day note. */
+  async #rememberParents(client, day) {
+    let note = day;
+    for (const label of ['monthNote', 'yearNote']) {
+      const parentId = note.parentNoteIds?.[0];
+      if (!parentId || parentId === 'root') {
+        return;
+      }
+      try {
+        note = await client.note(parentId);
+      } catch (err) {
+        if (err instanceof TriliumError && err.kind === 'not_found') {
+          return; // moved or deleted meanwhile
+        }
+        throw err;
+      }
+      if (!labelNames(note).includes(label)) {
+        return;
+      }
+      this.#remember(note);
+    }
+  }
+
   #written(note, parentTitle) {
-    const summary = summarizeNote(note, this.config.url);
+    const summary = summarizeNote(note, this.config.url, this.language);
     return {
       note_id: note.noteId,
       note_title: summary.title,
