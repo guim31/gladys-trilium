@@ -122,7 +122,12 @@ test('network failures and timeouts', async () => {
     timeout: 20,
     fetch: (url, init) =>
       new Promise((resolve, reject) => {
-        init.signal.addEventListener('abort', () => reject(init.signal.reason));
+        // AbortSignal.timeout does not hold the event loop (Node 22): this does.
+        const hold = setTimeout(() => {}, 5_000);
+        init.signal.addEventListener('abort', () => {
+          clearTimeout(hold);
+          reject(init.signal.reason);
+        });
       }),
   });
   await assert.rejects(slow.appInfo(), (err) => err.kind === 'timeout');

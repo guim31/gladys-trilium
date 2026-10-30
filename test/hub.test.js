@@ -495,6 +495,7 @@ test('append_day_note on a new month: the month note Trilium creates is not anno
   const world = await createWorld();
   t.after(() => world.app.stop());
   world.clock.now = Date.parse('2026-11-15T12:00:00.000Z');
+  world.server.state.clock = world.clock.now;
   const ack = await world.fake.sceneAction('append_day_note', { line: 'Hello' });
   assert.equal(ack.success, true, ack.error);
   assert.ok(world.server.state.notes.some((n) => n.title === '11 - month'));

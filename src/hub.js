@@ -885,7 +885,8 @@ export class Hub {
         logger.warn(`Labels not added: ${err.message}`);
         throw new CommandError('labels', language);
       }
-      return this.#written(note, parentNote.title);
+      // A protected parent has an encrypted title.
+      return this.#written(note, summarizeNote(parentNote, this.config.url, language).title);
     });
   }
 
@@ -912,9 +913,8 @@ export class Hub {
           throw new CommandError('protected', language);
         }
         // Trilium may have just created the month and the year notes too:
-        // they are the integration's writes, never announced. (Remembering an
-        // older one is harmless: its key is dropped at the next read.)
-        await this.#rememberParents(client, day);
+        // they are the integration's writes, never announced.
+        await this.#rememberParents(client, day, now);
         const html = await client.content(day.noteId);
         await client.setContent(day.noteId, appendParagraph(html, text));
         day = await client.note(day.noteId);
@@ -927,8 +927,12 @@ export class Hub {
     });
   }
 
-  /** The month and year notes above a day note. */
-  async #rememberParents(client, day) {
+  /**
+   * The month and year notes above a day note, when created by this call (a
+   * minute of margin for the clocks): an older one may hold a change made by
+   * a person, still to announce.
+   */
+  async #rememberParents(client, day, since) {
     let note = day;
     for (const label of ['monthNote', 'yearNote']) {
       const parentId = note.parentNoteIds?.[0];
@@ -946,7 +950,9 @@ export class Hub {
       if (!labelNames(note).includes(label)) {
         return;
       }
-      this.#remember(note);
+      if (timeOf(note.utcDateCreated) >= since - 60_000) {
+        this.#remember(note);
+      }
     }
   }
 
