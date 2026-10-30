@@ -1,0 +1,8 @@
+{
+  "status": 404,
+  "body": {
+    "status": 404,
+    "code": "NOTE_NOT_FOUND",
+    "message": "Note 'doesNotExist1' not found."
+  }
+}

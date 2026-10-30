@@ -1,0 +1,8 @@
+{
+  "status": 400,
+  "body": {
+    "status": 400,
+    "code": "SEARCH_QUERY_PARAM_MANDATORY",
+    "message": "'search' query parameter is mandatory."
+  }
+}

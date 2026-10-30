@@ -1,8 +1,8 @@
 {
-  "name": "gladys-integration-template-js",
+  "name": "gladys-trilium",
   "version": "1.0.0",
   "private": true,
-  "description": "Official starter template to build an external integration for Gladys Assistant with the JavaScript SDK.",
+  "description": "Trilium Notes integration for Gladys Assistant: counters, to-dos, changed notes, and a day-note journal written from scenes.",
   "type": "module",
   "main": "index.js",
   "scripts": {

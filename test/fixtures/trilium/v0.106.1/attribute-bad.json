@@ -1,0 +1,13 @@
+{
+  "status": 201,
+  "body": {
+    "attributeId": "Vujnt8Zgv4E5",
+    "noteId": "vqtWeEiRaqj6",
+    "type": "label",
+    "name": "bad_name",
+    "value": "",
+    "position": 20,
+    "isInheritable": false,
+    "utcDateModified": "2026-10-30 12:08:16.022Z"
+  }
+}

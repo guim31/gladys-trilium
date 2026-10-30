@@ -1,0 +1,14 @@
+{
+  "status": 200,
+  "body": {
+    "appVersion": "0.106.1",
+    "dbVersion": 240,
+    "syncVersion": 39,
+    "buildDate": "2026-10-23T21:07:36Z",
+    "buildRevision": "2be0c6ed7867fca60c3ed315b449952b536efe75",
+    "clipperProtocolVersion": "1.0",
+    "utcDateTime": "2026-10-30T12:00:39.244Z",
+    "nodeVersion": "v24.22.1",
+    "dataDirectory": "/home/node/trilium-data"
+  }
+}

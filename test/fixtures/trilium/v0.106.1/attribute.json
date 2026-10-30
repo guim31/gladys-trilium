@@ -1,0 +1,13 @@
+{
+  "status": 201,
+  "body": {
+    "attributeId": "MR3bG86rZFU2",
+    "noteId": "vqtWeEiRaqj6",
+    "type": "label",
+    "name": "todo",
+    "value": "",
+    "position": 10,
+    "isInheritable": false,
+    "utcDateModified": "2026-10-30 12:08:15.985Z"
+  }
+}

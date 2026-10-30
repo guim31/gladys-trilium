@@ -16,8 +16,8 @@ its only runtime dependency. It started from the official JavaScript template.
 ```bash
 npm install
 npm test                                  # node --test, the built-in runner
-node --test test/devices.test.js          # one file
-node --test --test-name-pattern "plug"    # tests whose name matches
+node --test test/hub.test.js              # one file
+node --test --test-name-pattern "widget"  # tests whose name matches
 npm run lint                              # ESLint
 npm run format:check                      # Prettier, as the CI runs it
 npm run format                            # Prettier, fix in place
@@ -32,15 +32,20 @@ pushing.
 
 ```
 index.js                          SDK wiring only: handlers registered before connect()
-src/devices/index.js              registry of the device blueprints + dispatch helpers
-src/devices/<type>.js             one device type per file (buildDevice, onPoll, onSetValue...)
+src/app.js                        registers every SDK handler on the hub (shared with the tests)
+src/hub.js                        the link to Trilium: timers, device, states, triggers, status, writes
+src/devices.js                    the Trilium device, its states, the instance id
+src/trilium/client.js             ETAPI (Authorization: <token>), errors by kind, streamed counts
+src/trilium/model.js              notes -> plain values; labels, text and lines typed by users
+src/store.js                      /data/trilium-state.json: the newest change the triggers saw
 src/scenes.js                     scene action handlers (manifest `scene_actions`)
-src/widgets.js                    dashboard widget handlers (manifest `widgets`)
+src/widgets.js                    dashboard widget (manifest `widgets`)
+src/texts.js                      every text produced by the container, in four languages
 src/config.js                     DEFAULT_CONFIG (mirrors the manifest defaults) + normalization
-src/weather.js                    example driver (Open-Meteo)
 gladys-assistant-integration.json manifest: name, config_schema, actions, image...
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
-test/                             node --test, against the SDK's fake Gladys (integration-sdk/testing)
+docs/{en,fr,de,es}.md             user documentation, re-hosted by Gladys (same sections)
+test/                             node --test, SDK fake Gladys + fake Trilium (test/helpers/)
+test/fixtures/trilium/v0.106.1/   bodies recorded on a real TriliumNext v0.106.1
 .github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
 ```
 
@@ -70,10 +75,62 @@ test/                             node --test, against the SDK's fake Gladys (in
   `type: "provider"`: 5.1.0). `test/manifest.test.js` ties the manifest to the
   code (defaults, action, scene and widget handlers): change both sides
   together.
-- **User-facing text** is bilingual (English and French): action messages,
-  manifest texts, and `docs/en.md` / `docs/fr.md`, kept in sync.
+- **User-facing text** exists in English, French, German and Spanish: action
+  messages, manifest texts, widget content, feature names, and
+  `docs/{en,fr,de,es}.md`, kept in sync (`test/i18n.test.js`).
 - **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
   in English. Tests never touch the network.
+
+## Trilium
+
+- **ETAPI** (`<base>/etapi/…`), token in `Authorization: <token>` (raw, no
+  scheme), created in Options → ETAPI, or by `POST /etapi/auth/login`
+  `{ password }` (answers `{ authToken }`). Errors are `{ status, code,
+message }`: 401 `NOT_AUTHENTICATED`, 404 `NOTE_NOT_FOUND`, 400
+  `PROPERTY_VALIDATION_ERROR` / `DATE_INVALID` / `SEARCH_QUERY_PARAM_MANDATORY`.
+  An unknown route is a 404 **without `code`**: the client calls it "not
+  Trilium". No rate limit on ETAPI calls.
+- `GET /notes?search=` answers `{ results }`, full notes **with their effective
+  attributes** (their own, and those of a template or inherited:
+  `attribute.noteId` tells them apart), never the content. `orderBy`,
+  `orderDirection`, `limit`; **no offset, no total**. The hidden subtree is left
+  out, but its root `_hidden`; `root` is in: `isSystemNote` drops both. About
+  870 bytes per note: the counts are read as a stream (`count()` counts
+  `{"noteId":"` at the start of each result) so a 50 000-note base never sits
+  whole in the 256 MB of the container.
+- Searches used: `note.noteId != ''` (every note), `note.utcDateModified >=
+'2026-10-29 23:00:00.000Z'` (string comparison of the stored UTC: the
+  container computes local midnight, TZ of Gladys), `#todo #!done`,
+  `note.title = '…'` (case insensitive: the exact title is preferred).
+- `PUT /notes/{id}/content` (text/plain body, HTML) answers 204 and moves
+  `utcDateModified`; **adding a label does not** (checked): a label added alone
+  is not a change the triggers can see. `GET /calendar/days/YYYY-MM-DD`
+  **creates** the day note (and month, year) from the day template when
+  missing; a new document's day template holds a "Tasks" heading and list.
+- `calendar/days` creates the **month and year notes** too: the day-note
+  action remembers them (`#rememberParents`) so they are never announced.
+  Reads announce nothing while a scene action writes (`writesPending`): the
+  note exists before the integration remembers it. `create_note` remembers
+  the note before adding its labels.
+- The ETAPI gives the **title of a protected note encrypted** (outside a
+  protected session): `summarizeNote` shows "Protected note" instead.
+- Redirections are **never followed** (`redirect: 'manual'`): from http to
+  https, fetch drops `Authorization` (another origin) and a 401 would blame
+  the token. A 3xx is the status "answers at another address".
+- `#resolveParent` never takes `_…` as an id (the hidden subtree).
+- The instance id is the root note's `utcDateCreated` in digits: stable across
+  a change of address, unique per document (synced copies share it, they hold
+  the same notes).
+- The triggers keep `{ instance, at, ids, since }` like gladys-bookstack (time
+  of the newest change seen, the notes changed at that millisecond, end of the
+  last complete read); writes of the integration are kept as
+  `<noteId>@<utcDateModified>` and never announced. Ten events per read, oldest
+  first; past 50 at once, the mark jumps to the newest.
+- Testing with Docker: `triliumnext/trilium` on a bridge network, no port
+  published (the host reaches the container IP). New document: `POST
+/api/setup/new-document`, then `POST /set-password` (form `password1`,
+  `password2`), then `POST /etapi/auth/login`. The new document holds ~180 demo
+  notes.
 
 ---
 

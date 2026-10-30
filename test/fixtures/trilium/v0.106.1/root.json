@@ -1,0 +1,38 @@
+{
+  "status": 200,
+  "body": {
+    "noteId": "root",
+    "isProtected": false,
+    "title": "root",
+    "type": "text",
+    "mime": "text/html",
+    "blobId": "z4PhNX7vuL3xVChQ1m2A",
+    "dateCreated": "2026-10-30 12:00:49.897+0000",
+    "dateModified": "2026-10-30 12:00:49.958+0000",
+    "utcDateCreated": "2026-10-30 12:00:49.898Z",
+    "utcDateModified": "2026-10-30 12:00:49.958Z",
+    "parentNoteIds": [],
+    "childNoteIds": [
+      "rK9JBJW3JfQn",
+      "cfR02i1aCOUE",
+      "hrTntJkFF1DU",
+      "8auTSLeJokAU",
+      "UNboi6UrliH1",
+      "06KP9ZzkZnIn",
+      "93H5v8KRe7D6",
+      "_hidden"
+    ],
+    "parentBranchIds": ["none_root"],
+    "childBranchIds": [
+      "root_rK9JBJW3JfQn",
+      "root_cfR02i1aCOUE",
+      "root_hrTntJkFF1DU",
+      "root_8auTSLeJokAU",
+      "root_UNboi6UrliH1",
+      "root_06KP9ZzkZnIn",
+      "root_93H5v8KRe7D6",
+      "root__hidden"
+    ],
+    "attributes": []
+  }
+}
