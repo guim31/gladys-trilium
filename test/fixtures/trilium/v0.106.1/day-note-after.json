@@ -1,0 +1,61 @@
+{
+  "status": 200,
+  "body": {
+    "noteId": "Pq0AXYtJG6X0",
+    "isProtected": false,
+    "title": "30 - Friday",
+    "type": "text",
+    "mime": "text/html",
+    "blobId": "MJQtrRE8HjiCEzdKOVrV",
+    "dateCreated": "2026-10-30 12:01:17.547+0000",
+    "dateModified": "2026-10-30 12:08:16.119+0000",
+    "utcDateCreated": "2026-10-30 12:01:17.547Z",
+    "utcDateModified": "2026-10-30 12:08:16.119Z",
+    "parentNoteIds": ["BmhvFegPo2A1"],
+    "childNoteIds": [],
+    "parentBranchIds": ["BmhvFegPo2A1_Pq0AXYtJG6X0"],
+    "childBranchIds": [],
+    "attributes": [
+      {
+        "attributeId": "cVEW2iRiROhD",
+        "noteId": "Pq0AXYtJG6X0",
+        "type": "label",
+        "name": "dateNote",
+        "value": "2026-10-30",
+        "position": 10,
+        "isInheritable": false,
+        "utcDateModified": "2026-10-30 12:01:17.549Z"
+      },
+      {
+        "attributeId": "ZeJbShhdkuUj",
+        "noteId": "Pq0AXYtJG6X0",
+        "type": "relation",
+        "name": "template",
+        "value": "R1zhtdqFhYcG",
+        "position": 30,
+        "isInheritable": false,
+        "utcDateModified": "2026-10-30 12:01:17.550Z"
+      },
+      {
+        "attributeId": "thYKxybcYrQD",
+        "noteId": "R1zhtdqFhYcG",
+        "type": "label",
+        "name": "iconClass",
+        "value": "bx bx-notepad",
+        "position": 10,
+        "isInheritable": false,
+        "utcDateModified": "2026-10-30 12:01:04.216Z"
+      },
+      {
+        "attributeId": "dV8CQ5f07ggh",
+        "noteId": "R1zhtdqFhYcG",
+        "type": "label",
+        "name": "excludeFromNoteMap",
+        "value": "",
+        "position": 20,
+        "isInheritable": false,
+        "utcDateModified": "2026-10-30 12:01:04.217Z"
+      }
+    ]
+  }
+}

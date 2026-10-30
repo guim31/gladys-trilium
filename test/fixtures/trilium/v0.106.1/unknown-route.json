@@ -1,0 +1,6 @@
+{
+  "status": 404,
+  "body": {
+    "message": "Router not found for request GET /etapi/nothing"
+  }
+}

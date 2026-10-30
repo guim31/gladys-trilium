@@ -1,177 +1,716 @@
 {
   "manifest_version": 1,
   "type": "device",
-  "name": "Demo Devices Template",
+  "name": "Trilium Notes",
   "description": {
-    "en": "Starter template showing sensors, a switch, a dimmable light and a smart plug.",
-    "fr": "Template de démarrage : capteurs, interrupteur, lampe variable et prise connectée."
+    "en": "Your Trilium notes in Gladys: counters, to-dos, changed notes, day note journal from scenes.",
+    "fr": "Vos notes Trilium dans Gladys : compteurs, tâches, notes modifiées, journal du jour écrit par scène.",
+    "de": "Deine Trilium-Notizen in Gladys: Zähler, Aufgaben, geänderte Notizen, Tagesjournal aus Szenen.",
+    "es": "Sus notas de Trilium en Gladys: contadores, tareas, notas modificadas, diario del día desde escenas."
   },
   "version": "1.0.0",
-  "docker_image": "ghcr.io/gladysassistant/integration-template-js:1.0.0",
+  "docker_image": "ghcr.io/guim31/gladys-trilium:1.0.0",
   "gladys_version": ">=5.1.0",
-  "cover_image": "https://raw.githubusercontent.com/GladysAssistant/integration-template-js/master/cover.png",
-  "categories": ["lighting", "security", "environment"],
-  "transports": ["local", "cloud"],
+  "cover_image": "https://raw.githubusercontent.com/guim31/gladys-trilium/main/cover.png",
+  "categories": ["services"],
+  "transports": ["local"],
   "config_schema": [
     {
       "key": "intro",
       "type": "section",
-      "label": { "en": "Getting started", "fr": "Pour commencer" },
+      "label": {
+        "en": "Connect Trilium",
+        "fr": "Connecter Trilium",
+        "de": "Trilium verbinden",
+        "es": "Conectar Trilium"
+      },
       "description": {
-        "en": "The demo weather station reads real data from the free Open-Meteo API: pick the coordinates to observe. No account, no API key.",
-        "fr": "La station météo de démonstration lit de vraies données via l'API gratuite Open-Meteo : choisissez les coordonnées à observer. Pas de compte, pas de clé d'API."
+        "en": "Enter the address of your Trilium server (Trilium Notes or TriliumNext) and an ETAPI token: in Trilium, open Options → ETAPI → Create new ETAPI token.",
+        "fr": "Saisissez l'adresse de votre serveur Trilium (Trilium Notes ou TriliumNext) et un jeton ETAPI : dans Trilium, ouvrez Options → ETAPI → Créer un nouveau jeton ETAPI.",
+        "de": "Gib die Adresse deines Trilium-Servers (Trilium Notes oder TriliumNext) und ein ETAPI-Token ein: Öffne in Trilium Optionen → ETAPI → Neues ETAPI-Token erstellen.",
+        "es": "Introduzca la dirección de su servidor Trilium (Trilium Notes o TriliumNext) y un token ETAPI: en Trilium, abra Opciones → ETAPI → Crear un nuevo token ETAPI."
       },
       "links": [
         {
-          "url": "https://open-meteo.com/en/docs",
-          "label": { "en": "Open-Meteo documentation", "fr": "Documentation Open-Meteo" }
+          "url": "https://docs.triliumnotes.org/",
+          "label": {
+            "en": "Trilium documentation",
+            "fr": "Documentation de Trilium",
+            "de": "Trilium-Dokumentation",
+            "es": "Documentación de Trilium"
+          }
         }
       ]
     },
     {
-      "key": "latitude",
-      "type": "number",
-      "label": { "en": "Latitude", "fr": "Latitude" },
-      "description": {
-        "en": "Latitude used for the demo weather sensor.",
-        "fr": "Latitude utilisée par le capteur météo de démonstration."
+      "key": "url",
+      "type": "string",
+      "label": {
+        "en": "Trilium address",
+        "fr": "Adresse de Trilium",
+        "de": "Trilium-Adresse",
+        "es": "Dirección de Trilium"
       },
-      "placeholder": { "en": "e.g. 48.8566", "fr": "ex. 48.8566" },
+      "placeholder": {
+        "en": "e.g. 192.168.1.50:8080",
+        "fr": "ex. 192.168.1.50:8080",
+        "de": "z. B. 192.168.1.50:8080",
+        "es": "p. ej. 192.168.1.50:8080"
+      },
+      "description": {
+        "en": "The address you open Trilium at in a browser.",
+        "fr": "L'adresse à laquelle vous ouvrez Trilium dans un navigateur.",
+        "de": "Die Adresse, unter der du Trilium im Browser öffnest.",
+        "es": "La dirección en la que abre Trilium en un navegador."
+      },
       "required": true,
-      "default": 48.8566,
-      "min": -90,
-      "max": 90
+      "default": ""
     },
     {
-      "key": "longitude",
-      "type": "number",
-      "label": { "en": "Longitude", "fr": "Longitude" },
-      "description": {
-        "en": "Longitude used for the demo weather sensor.",
-        "fr": "Longitude utilisée par le capteur météo de démonstration."
+      "key": "token",
+      "type": "secret",
+      "label": {
+        "en": "ETAPI token",
+        "fr": "Jeton ETAPI",
+        "de": "ETAPI-Token",
+        "es": "Token ETAPI"
       },
-      "placeholder": { "en": "e.g. 2.3522", "fr": "ex. 2.3522" },
-      "required": true,
-      "default": 2.3522,
-      "min": -180,
-      "max": 180
+      "description": {
+        "en": "Shown once, when the token is created.",
+        "fr": "Affiché une seule fois, à la création du jeton.",
+        "de": "Wird nur einmal angezeigt, beim Erstellen des Tokens.",
+        "es": "Se muestra una sola vez, al crear el token."
+      },
+      "required": true
     },
     {
-      "key": "unit",
+      "key": "refresh_minutes",
       "type": "select",
-      "label": { "en": "Temperature unit", "fr": "Unité de température" },
+      "label": {
+        "en": "Read Trilium every",
+        "fr": "Lire Trilium toutes les",
+        "de": "Trilium lesen alle",
+        "es": "Leer Trilium cada"
+      },
+      "description": {
+        "en": "Changed notes are announced at the next read.",
+        "fr": "Les notes modifiées sont annoncées à la lecture suivante.",
+        "de": "Geänderte Notizen werden beim nächsten Lesen gemeldet.",
+        "es": "Las notas modificadas se anuncian en la siguiente lectura."
+      },
       "required": false,
-      "default": "celsius",
+      "default": "15",
       "options": [
-        { "value": "celsius", "label": { "en": "Celsius", "fr": "Celsius" } },
-        { "value": "fahrenheit", "label": { "en": "Fahrenheit", "fr": "Fahrenheit" } }
+        {
+          "value": "5",
+          "label": {
+            "en": "5 minutes",
+            "fr": "5 minutes",
+            "de": "5 Minuten",
+            "es": "5 minutos"
+          }
+        },
+        {
+          "value": "15",
+          "label": {
+            "en": "15 minutes",
+            "fr": "15 minutes",
+            "de": "15 Minuten",
+            "es": "15 minutos"
+          }
+        },
+        {
+          "value": "30",
+          "label": {
+            "en": "30 minutes",
+            "fr": "30 minutes",
+            "de": "30 Minuten",
+            "es": "30 minutos"
+          }
+        },
+        {
+          "value": "60",
+          "label": {
+            "en": "60 minutes",
+            "fr": "60 minutes",
+            "de": "60 Minuten",
+            "es": "60 minutos"
+          }
+        }
       ]
     },
     {
-      "key": "poll_frequency",
-      "type": "number",
-      "label": { "en": "Refresh interval (s)", "fr": "Intervalle de rafraîchissement (s)" },
+      "key": "todo_label",
+      "type": "string",
+      "label": {
+        "en": "To-do label",
+        "fr": "Étiquette des tâches",
+        "de": "Label der Aufgaben",
+        "es": "Etiqueta de las tareas"
+      },
       "description": {
-        "en": "How often sensors are polled, in seconds (one minute minimum).",
-        "fr": "Fréquence d'interrogation des capteurs, en secondes (une minute minimum)."
+        "en": "Open to-dos are the notes with this label and without #done.",
+        "fr": "Les tâches ouvertes sont les notes portant cette étiquette et pas #done.",
+        "de": "Offene Aufgaben sind die Notizen mit diesem Label und ohne #done.",
+        "es": "Las tareas abiertas son las notas con esta etiqueta y sin #done."
       },
       "required": false,
-      "default": 300,
-      "min": 60,
-      "max": 3600
+      "default": "todo"
+    },
+    {
+      "key": "language",
+      "type": "select",
+      "label": {
+        "en": "Language of names and messages",
+        "fr": "Langue des noms et messages",
+        "de": "Sprache der Namen und Meldungen",
+        "es": "Idioma de nombres y mensajes"
+      },
+      "description": {
+        "en": "Feature names are set when a device is added to Gladys.",
+        "fr": "Les noms des fonctionnalités sont fixés à l'ajout d'un appareil dans Gladys.",
+        "de": "Die Namen der Funktionen werden beim Hinzufügen eines Geräts zu Gladys festgelegt.",
+        "es": "Los nombres de las funciones se fijan al añadir un dispositivo a Gladys."
+      },
+      "required": false,
+      "default": "fr",
+      "options": [
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "Anglais",
+            "de": "Englisch",
+            "es": "Inglés"
+          }
+        },
+        {
+          "value": "fr",
+          "label": {
+            "en": "French",
+            "fr": "Français",
+            "de": "Französisch",
+            "es": "Francés"
+          }
+        },
+        {
+          "value": "de",
+          "label": {
+            "en": "German",
+            "fr": "Allemand",
+            "de": "Deutsch",
+            "es": "Alemán"
+          }
+        },
+        {
+          "value": "es",
+          "label": {
+            "en": "Spanish",
+            "fr": "Espagnol",
+            "de": "Spanisch",
+            "es": "Español"
+          }
+        }
+      ]
     }
   ],
   "actions": [
     {
-      "key": "test_weather",
-      "label": { "en": "Test the weather provider", "fr": "Tester le fournisseur météo" },
-      "timeout_seconds": 30
-    },
-    {
-      "key": "identify",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
-        }
-      ]
+      "key": "test_connection",
+      "label": {
+        "en": "Test the connection",
+        "fr": "Tester la connexion",
+        "de": "Verbindung testen",
+        "es": "Probar la conexión"
+      },
+      "timeout_seconds": 60
     }
   ],
   "scene_triggers": [
     {
-      "key": "motion_detected",
-      "label": { "en": "Motion detected", "fr": "Mouvement détecté" },
+      "key": "note_changed",
+      "label": {
+        "en": "Trilium note created or updated",
+        "fr": "Note Trilium créée ou modifiée",
+        "de": "Trilium-Notiz erstellt oder geändert",
+        "es": "Nota de Trilium creada o modificada"
+      },
       "description": {
-        "en": "A demo motion sensor saw a person or an animal move.",
-        "fr": "Un détecteur de démonstration a vu bouger une personne ou un animal."
+        "en": "A note is created or changed in Trilium (the notes written by this integration excepted).",
+        "fr": "Une note est créée ou modifiée dans Trilium (hors notes écrites par cette intégration).",
+        "de": "Eine Notiz wird in Trilium erstellt oder geändert (außer Notizen dieser Integration).",
+        "es": "Se crea o modifica una nota en Trilium (salvo las notas escritas por esta integración)."
       },
       "fields": [
         {
-          "key": "device",
+          "key": "change",
           "type": "select",
-          "source": "devices",
-          "label": { "en": "Sensor", "fr": "Détecteur" }
-        },
-        {
-          "key": "target",
-          "type": "multi_select",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" },
+          "required": false,
+          "label": {
+            "en": "Change (empty: both)",
+            "fr": "Changement (vide : les deux)",
+            "de": "Änderung (leer: beide)",
+            "es": "Cambio (vacío: ambos)"
+          },
           "options": [
-            { "value": "person", "label": { "en": "Person", "fr": "Personne" } },
-            { "value": "animal", "label": { "en": "Animal", "fr": "Animal" } }
+            {
+              "value": "created",
+              "label": {
+                "en": "Note created",
+                "fr": "Note créée",
+                "de": "Notiz erstellt",
+                "es": "Nota creada"
+              }
+            },
+            {
+              "value": "updated",
+              "label": {
+                "en": "Note updated",
+                "fr": "Note modifiée",
+                "de": "Notiz geändert",
+                "es": "Nota modificada"
+              }
+            }
           ]
         }
       ],
       "variables": [
         {
-          "key": "target",
+          "key": "note_title",
           "type": "string",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" }
+          "label": {
+            "en": "Note title",
+            "fr": "Titre de la note",
+            "de": "Titel der Notiz",
+            "es": "Título de la nota"
+          }
+        },
+        {
+          "key": "change",
+          "type": "string",
+          "label": {
+            "en": "Change (created or updated)",
+            "fr": "Changement (created ou updated)",
+            "de": "Änderung (created oder updated)",
+            "es": "Cambio (created o updated)"
+          }
+        },
+        {
+          "key": "url",
+          "type": "string",
+          "label": {
+            "en": "Note address",
+            "fr": "Adresse de la note",
+            "de": "Adresse der Notiz",
+            "es": "Dirección de la nota"
+          }
+        },
+        {
+          "key": "labels",
+          "type": "string",
+          "label": {
+            "en": "Labels",
+            "fr": "Étiquettes",
+            "de": "Labels",
+            "es": "Etiquetas"
+          }
+        },
+        {
+          "key": "note_id",
+          "type": "string",
+          "label": {
+            "en": "Note id",
+            "fr": "Identifiant de la note",
+            "de": "Notiz-ID",
+            "es": "Id. de la nota"
+          }
+        }
+      ]
+    },
+    {
+      "key": "labeled_note_changed",
+      "label": {
+        "en": "Labeled Trilium note changed",
+        "fr": "Note Trilium étiquetée modifiée",
+        "de": "Trilium-Notiz mit Label geändert",
+        "es": "Nota de Trilium etiquetada modificada"
+      },
+      "description": {
+        "en": "A note carrying a given label is created or changed in Trilium.",
+        "fr": "Une note portant une étiquette donnée est créée ou modifiée dans Trilium.",
+        "de": "Eine Notiz mit einem bestimmten Label wird in Trilium erstellt oder geändert.",
+        "es": "Se crea o modifica en Trilium una nota con una etiqueta concreta."
+      },
+      "fields": [
+        {
+          "key": "label",
+          "type": "string",
+          "required": true,
+          "label": {
+            "en": "Label",
+            "fr": "Étiquette",
+            "de": "Label",
+            "es": "Etiqueta"
+          },
+          "description": {
+            "en": "The label name, without # and exactly as written in Trilium (e.g. todo).",
+            "fr": "Le nom de l'étiquette, sans # et exactement comme dans Trilium (ex. todo).",
+            "de": "Der Name des Labels, ohne # und genau wie in Trilium (z. B. todo).",
+            "es": "El nombre de la etiqueta, sin # y exactamente como en Trilium (p. ej. todo)."
+          }
+        },
+        {
+          "key": "change",
+          "type": "select",
+          "required": false,
+          "label": {
+            "en": "Change (empty: both)",
+            "fr": "Changement (vide : les deux)",
+            "de": "Änderung (leer: beide)",
+            "es": "Cambio (vacío: ambos)"
+          },
+          "options": [
+            {
+              "value": "created",
+              "label": {
+                "en": "Note created",
+                "fr": "Note créée",
+                "de": "Notiz erstellt",
+                "es": "Nota creada"
+              }
+            },
+            {
+              "value": "updated",
+              "label": {
+                "en": "Note updated",
+                "fr": "Note modifiée",
+                "de": "Notiz geändert",
+                "es": "Nota modificada"
+              }
+            }
+          ]
+        }
+      ],
+      "variables": [
+        {
+          "key": "note_title",
+          "type": "string",
+          "label": {
+            "en": "Note title",
+            "fr": "Titre de la note",
+            "de": "Titel der Notiz",
+            "es": "Título de la nota"
+          }
+        },
+        {
+          "key": "change",
+          "type": "string",
+          "label": {
+            "en": "Change (created or updated)",
+            "fr": "Changement (created ou updated)",
+            "de": "Änderung (created oder updated)",
+            "es": "Cambio (created o updated)"
+          }
+        },
+        {
+          "key": "url",
+          "type": "string",
+          "label": {
+            "en": "Note address",
+            "fr": "Adresse de la note",
+            "de": "Adresse der Notiz",
+            "es": "Dirección de la nota"
+          }
+        },
+        {
+          "key": "labels",
+          "type": "string",
+          "label": {
+            "en": "Labels",
+            "fr": "Étiquettes",
+            "de": "Labels",
+            "es": "Etiquetas"
+          }
+        },
+        {
+          "key": "note_id",
+          "type": "string",
+          "label": {
+            "en": "Note id",
+            "fr": "Identifiant de la note",
+            "de": "Notiz-ID",
+            "es": "Id. de la nota"
+          }
+        },
+        {
+          "key": "label",
+          "type": "string",
+          "label": {
+            "en": "Label",
+            "fr": "Étiquette",
+            "de": "Label",
+            "es": "Etiqueta"
+          }
         }
       ]
     }
   ],
   "scene_actions": [
     {
-      "key": "identify_device",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "description": {
-        "en": "Make a device signal itself (the demo light blinks).",
-        "fr": "Fait se signaler un appareil (la lampe de démonstration clignote)."
+      "key": "append_day_note",
+      "label": {
+        "en": "Add a line to the Trilium day note",
+        "fr": "Ajouter une ligne à la note du jour Trilium",
+        "de": "Zeile zur Trilium-Tagesnotiz hinzufügen",
+        "es": "Añadir una línea a la nota del día de Trilium"
       },
-      "timeout_seconds": 15,
+      "description": {
+        "en": "Adds a line, with the time, at the end of today's note of the Trilium journal (created if missing).",
+        "fr": "Ajoute une ligne, avec l'heure, à la fin de la note du jour du journal Trilium (créée si besoin).",
+        "de": "Fügt am Ende der heutigen Notiz des Trilium-Journals eine Zeile mit Uhrzeit hinzu (bei Bedarf erstellt).",
+        "es": "Añade una línea, con la hora, al final de la nota de hoy del diario de Trilium (creada si falta)."
+      },
+      "timeout_seconds": 30,
       "fields": [
         {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
+          "key": "line",
+          "type": "string",
+          "required": true,
+          "label": {
+            "en": "Line",
+            "fr": "Ligne",
+            "de": "Zeile",
+            "es": "Línea"
+          },
+          "placeholder": {
+            "en": "e.g. Boiler started",
+            "fr": "ex. Chaudière démarrée",
+            "de": "z. B. Heizung gestartet",
+            "es": "p. ej. Caldera encendida"
+          }
+        },
+        {
+          "key": "add_time",
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "label": {
+            "en": "Start with the time",
+            "fr": "Commencer par l'heure",
+            "de": "Mit der Uhrzeit beginnen",
+            "es": "Empezar con la hora"
+          }
         }
       ],
       "outputs": [
         {
-          "key": "signalled",
-          "type": "boolean",
-          "label": { "en": "Device signalled", "fr": "Appareil signalé" }
+          "key": "note_title",
+          "type": "string",
+          "label": {
+            "en": "Note title",
+            "fr": "Titre de la note",
+            "de": "Titel der Notiz",
+            "es": "Título de la nota"
+          }
+        },
+        {
+          "key": "url",
+          "type": "string",
+          "label": {
+            "en": "Note address",
+            "fr": "Adresse de la note",
+            "de": "Adresse der Notiz",
+            "es": "Dirección de la nota"
+          }
+        },
+        {
+          "key": "note_id",
+          "type": "string",
+          "label": {
+            "en": "Note id",
+            "fr": "Identifiant de la note",
+            "de": "Notiz-ID",
+            "es": "Id. de la nota"
+          }
+        }
+      ]
+    },
+    {
+      "key": "create_note",
+      "label": {
+        "en": "Create a Trilium note",
+        "fr": "Créer une note Trilium",
+        "de": "Trilium-Notiz erstellen",
+        "es": "Crear una nota de Trilium"
+      },
+      "description": {
+        "en": "Creates a text note under a chosen note, with labels if you want (todo makes it a to-do).",
+        "fr": "Crée une note texte sous une note choisie, avec des étiquettes si vous le souhaitez (todo en fait une tâche).",
+        "de": "Erstellt eine Textnotiz unter einer gewählten Notiz, auf Wunsch mit Labels (todo macht sie zur Aufgabe).",
+        "es": "Crea una nota de texto bajo una nota elegida, con etiquetas si lo desea (todo la convierte en tarea)."
+      },
+      "timeout_seconds": 30,
+      "fields": [
+        {
+          "key": "title",
+          "type": "string",
+          "required": true,
+          "label": {
+            "en": "Title",
+            "fr": "Titre",
+            "de": "Titel",
+            "es": "Título"
+          }
+        },
+        {
+          "key": "parent",
+          "type": "string",
+          "required": false,
+          "label": {
+            "en": "Parent note (empty: root)",
+            "fr": "Note parente (vide : racine)",
+            "de": "Übergeordnete Notiz (leer: Wurzel)",
+            "es": "Nota padre (vacío: raíz)"
+          },
+          "description": {
+            "en": "The title or the id of an existing note.",
+            "fr": "Le titre ou l'identifiant d'une note existante.",
+            "de": "Titel oder ID einer vorhandenen Notiz.",
+            "es": "El título o el id. de una nota existente."
+          }
+        },
+        {
+          "key": "content",
+          "type": "string",
+          "required": false,
+          "label": {
+            "en": "Content (optional)",
+            "fr": "Contenu (facultatif)",
+            "de": "Inhalt (optional)",
+            "es": "Contenido (opcional)"
+          },
+          "description": {
+            "en": "Plain text: one paragraph per line.",
+            "fr": "Texte brut : un paragraphe par ligne.",
+            "de": "Reiner Text: ein Absatz pro Zeile.",
+            "es": "Texto sin formato: un párrafo por línea."
+          }
+        },
+        {
+          "key": "labels",
+          "type": "string",
+          "required": false,
+          "label": {
+            "en": "Labels (optional)",
+            "fr": "Étiquettes (facultatif)",
+            "de": "Labels (optional)",
+            "es": "Etiquetas (opcional)"
+          },
+          "placeholder": {
+            "en": "e.g. todo, priority=high",
+            "fr": "ex. todo, priorité=haute",
+            "de": "z. B. todo, Priorität=hoch",
+            "es": "p. ej. todo, prioridad=alta"
+          },
+          "description": {
+            "en": "Separated by commas; name=value for a label with a value.",
+            "fr": "Séparées par des virgules ; nom=valeur pour une étiquette avec valeur.",
+            "de": "Durch Kommas getrennt; Name=Wert für ein Label mit Wert.",
+            "es": "Separadas por comas; nombre=valor para una etiqueta con valor."
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "key": "note_title",
+          "type": "string",
+          "label": {
+            "en": "Note title",
+            "fr": "Titre de la note",
+            "de": "Titel der Notiz",
+            "es": "Título de la nota"
+          }
+        },
+        {
+          "key": "url",
+          "type": "string",
+          "label": {
+            "en": "Note address",
+            "fr": "Adresse de la note",
+            "de": "Adresse der Notiz",
+            "es": "Dirección de la nota"
+          }
+        },
+        {
+          "key": "note_id",
+          "type": "string",
+          "label": {
+            "en": "Note id",
+            "fr": "Identifiant de la note",
+            "de": "Notiz-ID",
+            "es": "Id. de la nota"
+          }
+        },
+        {
+          "key": "parent_title",
+          "type": "string",
+          "label": {
+            "en": "Parent note",
+            "fr": "Note parente",
+            "de": "Übergeordnete Notiz",
+            "es": "Nota padre"
+          }
         }
       ]
     }
   ],
   "widgets": [
     {
-      "key": "demo_status",
-      "label": { "en": "Demo status", "fr": "État de la démo" },
-      "description": {
-        "en": "Live temperature and plug power, plug connection and observed location.",
-        "fr": "Température et puissance en direct, connexion de la prise, position observée."
+      "key": "notes",
+      "label": {
+        "en": "Trilium",
+        "fr": "Trilium",
+        "de": "Trilium",
+        "es": "Trilium"
       },
-      "icon": "activity",
-      "action_timeout_seconds": 15
+      "description": {
+        "en": "Counters and the notes changed last, or the open to-dos of a label.",
+        "fr": "Compteurs et dernières notes modifiées, ou les tâches ouvertes d'une étiquette.",
+        "de": "Zähler und zuletzt geänderte Notizen oder die offenen Aufgaben eines Labels.",
+        "es": "Contadores y últimas notas modificadas, o las tareas abiertas de una etiqueta."
+      },
+      "icon": "edit",
+      "settings": [
+        {
+          "key": "label",
+          "type": "string",
+          "required": false,
+          "label": {
+            "en": "Label (empty: latest notes)",
+            "fr": "Étiquette (vide : dernières notes)",
+            "de": "Label (leer: neueste Notizen)",
+            "es": "Etiqueta (vacío: últimas notas)"
+          },
+          "description": {
+            "en": "e.g. todo: lists the notes with this label and without #done.",
+            "fr": "ex. todo : liste les notes portant cette étiquette et pas #done.",
+            "de": "z. B. todo: listet die Notizen mit diesem Label und ohne #done.",
+            "es": "p. ej. todo: lista las notas con esta etiqueta y sin #done."
+          }
+        },
+        {
+          "key": "hide_counters",
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "label": {
+            "en": "Hide the counters",
+            "fr": "Masquer les compteurs",
+            "de": "Zähler ausblenden",
+            "es": "Ocultar los contadores"
+          }
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,8 @@
+{
+  "status": 400,
+  "body": {
+    "status": 400,
+    "code": "DATE_INVALID",
+    "message": "Date \"2026-13-45\" is not valid."
+  }
+}
