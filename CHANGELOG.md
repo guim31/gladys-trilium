@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-30
+
 ### Added
 
 - A Trilium device: notes, notes changed today, open to-dos (a label, `todo` by
@@ -24,4 +26,5 @@ the notes of the version's GitHub Release.
   content and labels).
 - Texts and documentation in English, French, German and Spanish.
 
-[Unreleased]: https://github.com/guim31/gladys-trilium/commits/main
+[Unreleased]: https://github.com/guim31/gladys-trilium/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/guim31/gladys-trilium/releases/tag/v1.0.0
